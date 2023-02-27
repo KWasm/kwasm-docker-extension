@@ -1,0 +1,19 @@
+{
+  "icon": "kwasm.svg",
+  "vm": {
+    "composefile": "docker-compose.yaml",
+    "exposes": {
+      "socket": "kwasm.sock"
+    }
+  },
+  "ui": {
+    "dashboard-tab": {
+      "title": "KWasm",
+      "src": "index.html",
+      "root": "ui",
+      "kwasm": {
+        "socket": "kwasm.sock"
+      }
+    }
+  }
+}

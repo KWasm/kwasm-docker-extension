@@ -1,0 +1,43 @@
+FROM golang:1.19-alpine AS builder
+ENV CGO_ENABLED=0
+WORKDIR /backend
+COPY backend/go.* .
+RUN --mount=type=cache,target=/go/pkg/mod \
+    --mount=type=cache,target=/root/.cache/go-build \
+    go mod download
+COPY backend/. .
+RUN --mount=type=cache,target=/go/pkg/mod \
+    --mount=type=cache,target=/root/.cache/go-build \
+    go build -trimpath -ldflags="-s -w" -o bin/service
+
+FROM --platform=$BUILDPLATFORM node:18.12-alpine3.16 AS client-builder
+WORKDIR /ui
+# cache packages in layer
+COPY ui/package.json /ui/package.json
+COPY ui/package-lock.json /ui/package-lock.json
+RUN --mount=type=cache,target=/usr/src/app/.npm \
+    npm set cache /usr/src/app/.npm && \
+    npm ci
+# install
+COPY ui /ui
+RUN npm run build
+
+FROM alpine
+LABEL org.opencontainers.image.title="KWasm for Docker Desktop" \
+    org.opencontainers.image.description="WebAssembly Containers for your Docker Desktop Kubernetes" \
+    org.opencontainers.image.vendor="" \
+    com.docker.desktop.extension.api.version="0.3.3" \
+    com.docker.extension.screenshots="" \
+    com.docker.extension.detailed-description="" \
+    com.docker.extension.publisher-url="" \
+    com.docker.extension.additional-urls="" \
+    com.docker.extension.changelog=""
+
+COPY --link --from=0xe282b0/kwasm-node-installer /assets /assets
+COPY --link --from=0xe282b0/kwasm-node-installer /script /script
+COPY --link --from=builder /backend/bin/service /
+COPY docker-compose.yaml .
+COPY metadata.json .
+COPY kwasm.svg .
+COPY --link --from=client-builder /ui/build ui
+CMD /service -socket /run/guest-services/kwasm.sock
