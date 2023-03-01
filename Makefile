@@ -1,4 +1,4 @@
-IMAGE?=kwasm/kwasm-docker-desktop
+IMAGE?=0xe282b0/kwasm-docker-desktop
 TAG?=latest
 
 BUILDER=buildx-multi-arch
@@ -17,6 +17,9 @@ update-extension: build-extension ## Update the extension
 
 prepare-buildx: ## Create buildx builder for multi-arch build, if not exists
 	docker buildx inspect $(BUILDER) || docker buildx create --name=$(BUILDER) --driver=docker-container --driver-opt=network=host
+
+validate-extension: ## Validate extension
+	docker extension validate -a -s -i $(IMAGE):$(TAG)
 
 push-extension: prepare-buildx ## Build & Upload extension image to hub. Do not push if tag already exists: make push-extension tag=0.1
 	docker pull $(IMAGE):$(TAG) && echo "Failure: Tag already exists" || docker buildx build --push --builder=$(BUILDER) --platform=linux/amd64,linux/arm64 --build-arg TAG=$(TAG) --tag=$(IMAGE):$(TAG) .

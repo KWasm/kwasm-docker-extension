@@ -1,3 +1,9 @@
 services:
   kwasm:
     image: ${DESKTOP_PLUGIN_IMAGE}
+    pid: host
+    privileged: true
+    volumes:
+      - /:/mnt/node-root
+    environment:
+      NODE_ROOT: /mnt/node-root

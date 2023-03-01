@@ -10,10 +10,7 @@
     "dashboard-tab": {
       "title": "KWasm",
       "src": "index.html",
-      "root": "ui",
-      "kwasm": {
-        "socket": "kwasm.sock"
-      }
+      "root": "ui"
     }
   }
 }

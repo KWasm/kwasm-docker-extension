@@ -31,10 +31,12 @@ LABEL org.opencontainers.image.title="KWasm for Docker Desktop" \
     com.docker.extension.detailed-description="" \
     com.docker.extension.publisher-url="" \
     com.docker.extension.additional-urls="" \
-    com.docker.extension.changelog=""
+    com.docker.extension.changelog="" \
+    com.docker.desktop.extension.icon="https://raw.githubusercontent.com/KWasm/kwasm.github.io/main/docs/assets/logo.png" \
+    com.docker.extension.categories="kubernetes,cloud-development"
 
-COPY --link --from=0xe282b0/kwasm-node-installer /assets /assets
-COPY --link --from=0xe282b0/kwasm-node-installer /script /script
+COPY --link --from=0xe282b0/kwasm-node-installer-experimental /assets /assets
+COPY --link --from=0xe282b0/kwasm-node-installer-experimental /script /script
 COPY --link --from=builder /backend/bin/service /
 COPY docker-compose.yaml .
 COPY metadata.json .

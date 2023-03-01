@@ -2,9 +2,12 @@ package main
 
 import (
 	"flag"
+	"io/ioutil"
 	"net"
 	"net/http"
 	"os"
+	"os/exec"
+	"strings"
 
 	"github.com/labstack/echo/middleware"
 
@@ -45,7 +48,7 @@ func main() {
 	}
 	router.Listener = ln
 
-	router.GET("/hello", hello)
+	router.GET("/install", install)
 
 	logger.Fatal(router.Start(startURL))
 }
@@ -54,8 +57,27 @@ func listen(path string) (net.Listener, error) {
 	return net.Listen("unix", path)
 }
 
-func hello(ctx echo.Context) error {
-	return ctx.JSON(http.StatusOK, HTTPMessageBody{Message: "hello"})
+func install(ctx echo.Context) error {
+	b, err := ioutil.ReadFile(os.Getenv("NODE_ROOT") + "/etc/docker/daemon.json")
+	if err != nil {
+		panic(err)
+	}
+	s := string(b)
+	// //check whether s contains substring text
+	if !strings.Contains(s, "\"containerd-snapshotter\":true") {
+		return ctx.JSON(http.StatusOK, HTTPMessageBody{Message: "Please go to settings > Features in development and enable \"Use containerd for pulling and storing images\"", Error: "containerd-snapshotter not enabled"})
+	}
+
+	//TODO move command to script file
+	command := exec.Command("sh", "-c", "cp -r /assets /$NODE_ROOT/opt/kwasm && export CONTAINERD_PID=$(ps aux | grep 'containerd.toml$' | head -n 1 | awk '{print $1}') && nsenter -m/$NODE_ROOT/proc/$CONTAINERD_PID/ns/mnt -- sh -c 'cp -f /opt/kwasm/containerd-shim-* /usr/local/bin/'")
+	out, err := command.CombinedOutput()
+	if err != nil {
+		return ctx.JSON(http.StatusOK, HTTPMessageBody{Message: string(out), Error: err.Error()})
+	} else if len(out) == 0 {
+		return ctx.JSON(http.StatusOK, HTTPMessageBody{Message: "OK"})
+	} else {
+		return ctx.JSON(http.StatusOK, HTTPMessageBody{Message: string(out)})
+	}
 }
 
 type HTTPMessageBody struct {
