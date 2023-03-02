@@ -25,12 +25,12 @@ RUN npm run build
 FROM alpine
 LABEL org.opencontainers.image.title="KWasm for Docker Desktop" \
     org.opencontainers.image.description="WebAssembly Containers for your Docker Desktop Kubernetes" \
-    org.opencontainers.image.vendor="" \
+    org.opencontainers.image.vendor="KWasm" \
     com.docker.desktop.extension.api.version="0.3.3" \
     com.docker.extension.screenshots="" \
     com.docker.extension.detailed-description="" \
-    com.docker.extension.publisher-url="" \
-    com.docker.extension.additional-urls="" \
+    com.docker.extension.publisher-url="https://github.com/KWasm/kwasm-docker-extension" \
+    com.docker.extension.additional-urls="[{\"title\":\"Issues\",\"url\":\"https://github.com/KWasm/kwasm-docker-extension/issues\"}]" \
     com.docker.extension.changelog="" \
     com.docker.desktop.extension.icon="https://raw.githubusercontent.com/KWasm/kwasm.github.io/main/docs/assets/logo.png" \
     com.docker.extension.categories="kubernetes,cloud-development"
