@@ -57,15 +57,22 @@ func listen(path string) (net.Listener, error) {
 	return net.Listen("unix", path)
 }
 
-func install(ctx echo.Context) error {
+func isContainerdEnabled() (bool, error) {
 	b, err := ioutil.ReadFile(os.Getenv("NODE_ROOT") + "/etc/docker/daemon.json")
 	if err != nil {
-		panic(err)
+		return false, err
 	}
 	s := string(b)
-	// //check whether s contains substring text
-	if !strings.Contains(s, "\"containerd-snapshotter\":true") {
+	return strings.Contains(s, "\"containerd-snapshotter\":true"), nil
+}
+
+func install(ctx echo.Context) error {
+	//check whether s contains substring text
+	enabled, err := isContainerdEnabled()
+	if !enabled {
 		return ctx.JSON(http.StatusOK, HTTPMessageBody{Message: "Please go to settings > Features in development and enable \"Use containerd for pulling and storing images\"", Error: "containerd-snapshotter not enabled"})
+	} else if err != nil {
+		return ctx.JSON(http.StatusOK, HTTPMessageBody{Message: "ERROR", Error: err.Error()})
 	}
 
 	//TODO move command to script file
